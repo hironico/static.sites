@@ -1,0 +1,35 @@
+{
+  "name": "static.sites",
+  "version": "2.0.0",
+  "description": "hironico.net static sites served by NodeJS Express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/hironico/static.sites.git"
+  },
+  "keywords": [
+    "hironico.net",
+    "static",
+    "javascript",
+    "nodejs",
+    "express",
+    "js",
+    "websocket"
+  ],
+  "author": "hironico.net",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hironico/static.sites/issues"
+  },
+  "homepage": "https://github.com/hironico/static.sites#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ws": "^8.2.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.14"
+  }
+}
