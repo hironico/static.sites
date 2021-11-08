@@ -4,6 +4,7 @@ const path = require("path");
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
+const fs = require("fs");
 const app = express();
 console.log(`Starting into: ${__dirname}`);
 app.use('/', express.static(path.join(__dirname, '..', '..', 'public', 'about.hironico')));
@@ -11,15 +12,40 @@ app.use('/', express.static(path.join(__dirname, '..', '..', 'public', 'about.hi
 const server = http.createServer(app);
 //initialize the WebSocket server instance
 const wss = new WebSocket.Server({ server });
+// next file is initialized by a prior configuration message sent from the client
+let nextFile = null;
 wss.on('connection', (ws) => {
-    //connection is up, let's add a simple simple event
+    //connection is up, let's add a simple event listener to save files on a directory
+    ws.binaryType = 'arraybuffer';
     ws.on('message', (message) => {
-        //log the received message and send it back to the client
-        console.log(`Received: ${message}`);
-        ws.send(`Hello, you sent -> ${message}`);
+        try {
+            if (nextFile !== null) {
+                const receivedData = new Float32Array(message);
+                const filePath = `/tmp/${nextFile.name}`;
+                console.log(`Writing ${receivedData.byteLength} bytes into ${filePath}`);
+                const buffer = Buffer.from(receivedData.buffer);
+                fs.writeFileSync(filePath, buffer);
+                nextFile = null;
+                ws.send('OK');
+            }
+            else {
+                console.log(`Received: ${message}`);
+                const myMessage = JSON.parse(message);
+                if ('upload' === myMessage.msgType) {
+                    nextFile = {
+                        name: myMessage.name,
+                        size: myMessage.size
+                    };
+                    ws.send('READY');
+                }
+            }
+        }
+        catch (error) {
+            nextFile = null;
+            console.log('Message not recognized.');
+            ws.send(`ERROR: Message not recognized: ${JSON.stringify(error)}`);
+        }
     });
-    //send immediatly a feedback to the incoming connection    
-    ws.send('Hi there, I am a WebSocket server');
 });
 //start our server
 const port = process.env.PORT || 8999;

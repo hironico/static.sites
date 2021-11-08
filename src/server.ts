@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as express from 'express';
 import * as http from 'http';
 import * as WebSocket from 'ws';
+import * as fs from 'fs';
 
 const app = express();
 
@@ -14,18 +15,41 @@ const server = http.createServer(app);
 //initialize the WebSocket server instance
 const wss = new WebSocket.Server({ server });
 
+// next file is initialized by a prior configuration message sent from the client
+let nextFile: any = null;
+
 wss.on('connection', (ws: WebSocket) => {
+    //connection is up, let's add a simple event listener to save files on a directory
+    ws.binaryType = 'arraybuffer';
 
-    //connection is up, let's add a simple simple event
-    ws.on('message', (message: string) => {
-
-        //log the received message and send it back to the client
-        console.log(`Received: ${message}`);
-        ws.send(`Hello, you sent -> ${message}`);
+    ws.on('message', (message: any) => {
+        try {
+            if (nextFile !== null) {
+                const receivedData = new Float32Array(message);                
+                const filePath = `/tmp/${nextFile.name}`;
+                console.log(`Writing ${receivedData.byteLength} bytes into ${filePath}`);
+                const buffer = Buffer.from(receivedData.buffer);
+                fs.writeFileSync(filePath, buffer);
+                nextFile = null;
+                ws.send('OK');
+            } else {
+                console.log(`Received: ${message}`);
+                const myMessage = JSON.parse(message);
+                if ('upload' === myMessage.msgType) {
+                    nextFile = {
+                        name: myMessage.name,
+                        size: myMessage.size
+                    }
+    
+                    ws.send('READY');
+                }
+            }            
+        } catch (error) {
+            nextFile = null;
+            console.log('Message not recognized.');            
+            ws.send(`ERROR: Message not recognized: ${JSON.stringify(error)}`);
+        }
     });
-
-    //send immediatly a feedback to the incoming connection    
-    ws.send('Hi there, I am a WebSocket server');
 });
 
 //start our server
