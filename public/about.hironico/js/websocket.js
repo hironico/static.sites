@@ -1,6 +1,6 @@
 function sendFileData(ws, fileToSend) {
 
-   console.log('Sending file data: ' + fileToSend.name);
+   console.log(`Processing ${fileToSend.name} ...`);
    
    var reader = new FileReader();
    var rawData = new ArrayBuffer();
@@ -11,7 +11,7 @@ function sendFileData(ws, fileToSend) {
        rawData = e.target.result;
        ws.binaryType = 'arrayBuffer';
        ws.send(rawData, { binary: true } );
-       console.log('Finished sending file data.');
+       console.log('Finished processing.');
    }
    
    reader.readAsArrayBuffer(fileToSend);
@@ -19,7 +19,7 @@ function sendFileData(ws, fileToSend) {
 
 function sendFile(ws, fileToSend) {
    const fileInfo = {
-      msgType: 'upload',
+      msgType: 'up',
       name: fileToSend.name,
       size: fileToSend.size
    }
@@ -28,8 +28,8 @@ function sendFile(ws, fileToSend) {
 
 function initWS() {            
     if ("WebSocket" in window) {       
-       // Let us open a web socket
-       var ws = new WebSocket("ws://localhost:8999/");
+       // Let us open a web socket on the same server we see in the url bar of the browser
+       var ws = new WebSocket(`ws://${location.host}/`);
         
        ws.onopen = function() {          
           // Web Socket is connected, send data using send()

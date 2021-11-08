@@ -31,7 +31,7 @@ wss.on('connection', (ws) => {
             else {
                 console.log(`Received: ${message}`);
                 const myMessage = JSON.parse(message);
-                if ('upload' === myMessage.msgType) {
+                if ('up' === myMessage.msgType) {
                     nextFile = {
                         name: myMessage.name,
                         size: myMessage.size
