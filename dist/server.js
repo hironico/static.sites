@@ -1,23 +1,26 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const path = require("path");
-const express = require("express");
-const https = require("https");
-const WebSocket = require("ws");
-const fs = require("fs");
-const dotenv = require("dotenv");
+const path_1 = __importDefault(require("path"));
+const express_1 = __importDefault(require("express"));
+const https_1 = __importDefault(require("https"));
+const ws_1 = __importDefault(require("ws"));
+const fs_1 = __importDefault(require("fs"));
+const dotenv_1 = __importDefault(require("dotenv"));
 // loading environment configuration fom the .env file
-dotenv.config();
-const app = express();
+dotenv_1.default.config();
+const app = (0, express_1.default)();
 console.log(`Starting into: ${__dirname}`);
-app.use('/', express.static(path.join(__dirname, '..', '..', 'public', 'about.hironico')));
+app.use('/', express_1.default.static(path_1.default.join(__dirname, '..', '..', 'public', 'about.hironico')));
 //initialize a simple http server
-const server = https.createServer({
-    key: fs.readFileSync(process.env.SERVER_SSL_KEY_FILE),
-    cert: fs.readFileSync(process.env.SERVER_SSL_CERT_FILE)
+const server = https_1.default.createServer({
+    key: fs_1.default.readFileSync(process.env.SERVER_SSL_KEY_FILE),
+    cert: fs_1.default.readFileSync(process.env.SERVER_SSL_CERT_FILE)
 }, app);
 //initialize the WebSocket server instance
-const wss = new WebSocket.Server({ server });
+const wss = new ws_1.default.Server({ server });
 // next file is initialized by a prior configuration message sent from the client
 let nextFile = null;
 wss.on('connection', (ws) => {
@@ -30,7 +33,7 @@ wss.on('connection', (ws) => {
                 const filePath = `/tmp/${nextFile.name}`;
                 console.log(`Writing ${receivedData.byteLength} bytes into ${filePath}`);
                 const buffer = Buffer.from(receivedData.buffer);
-                fs.writeFileSync(filePath, buffer);
+                fs_1.default.writeFileSync(filePath, buffer);
                 nextFile = null;
                 ws.send('OK');
             }

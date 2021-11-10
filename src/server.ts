@@ -1,8 +1,13 @@
-import * as path from 'path';
-import * as express from 'express';
-import * as http from 'http';
-import * as WebSocket from 'ws';
-import * as fs from 'fs';
+import path from 'path';
+import express from 'express';
+import https from 'https';
+import WebSocket from 'ws';
+import fs from 'fs';
+
+import dotenv from "dotenv";
+
+// loading environment configuration fom the .env file
+dotenv.config();
 
 const app = express();
 
@@ -10,7 +15,10 @@ console.log(`Starting into: ${__dirname}`);
 app.use('/', express.static(path.join(__dirname, '..', '..', 'public', 'about.hironico')));
 
 //initialize a simple http server
-const server = http.createServer(app);
+const server = https.createServer({
+    key: fs.readFileSync(process.env.SERVER_SSL_KEY_FILE),
+    cert: fs.readFileSync(process.env.SERVER_SSL_CERT_FILE)
+}, app)
 
 //initialize the WebSocket server instance
 const wss = new WebSocket.Server({ server });
