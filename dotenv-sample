@@ -1,0 +1,28 @@
+#######################################################
+#
+# SAMPLE .env file for configuring server
+#
+# Copy this file and name it ".env"
+####################################################### 
+
+#
+# This is configuration file for static sites server.
+# Adapt the settings below to fit your needs.
+# Please provide the following 
+# - a valid SSL certificate and key files for using HTTPS
+#
+
+#
+# Server configuration for HTTPS
+# Set the port number to match your deployment config (default HTTPS is 443)
+# Provide the key and cert files for your HTTPS certificate
+#
+# To generate a DEVELOPMENT certificate and key, use the following command:
+# openssl req nodes -new -x509 -keyout server.key -out server.cert -days 365
+#
+# To generate a PRODUCTION certificate, use a proper signed cert, 
+# for instance at let's encrypt.
+#
+SERVER_PORT=4000
+SERVER_SSL_KEY_FILE=server.key
+SERVER_SSL_CERT_FILE=server.cert
