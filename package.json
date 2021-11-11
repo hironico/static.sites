@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "build": "./node_modules/typescript/bin/tsc",
-    "start": "node ./dist/server/server.js",
+    "start": "node ./dist/server.js",
     "dev": "nodemon ./dist/server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

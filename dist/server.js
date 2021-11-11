@@ -13,7 +13,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 console.log(`Starting into: ${__dirname}`);
-app.use('/', express_1.default.static(path_1.default.join(__dirname, '..', '..', 'public', 'about.hironico')));
+app.use('/', express_1.default.static(path_1.default.join(__dirname, '..', 'public', 'about.hironico')));
 //initialize a simple http server
 const server = https_1.default.createServer({
     key: fs_1.default.readFileSync(process.env.SERVER_SSL_KEY_FILE),
@@ -57,7 +57,7 @@ wss.on('connection', (ws) => {
     });
 });
 //start our server
-const port = process.env.PORT || 8999;
+const port = process.env.SERVER_PORT || 4000;
 server.listen(port, () => {
     console.log(`Server started on port ${port} :)`);
 });

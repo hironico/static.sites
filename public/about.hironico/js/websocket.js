@@ -29,7 +29,7 @@ function sendFile(ws, fileToSend) {
 function initWS() {            
     if ("WebSocket" in window) {       
        // Let us open a web socket on the same server we see in the url bar of the browser
-       var ws = new WebSocket(`ws://${location.host}/`);
+       var ws = new WebSocket(`wss://${location.host}/`);
         
        ws.onopen = function() {          
           // Web Socket is connected, send data using send()

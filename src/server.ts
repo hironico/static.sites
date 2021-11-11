@@ -12,7 +12,7 @@ dotenv.config();
 const app = express();
 
 console.log(`Starting into: ${__dirname}`);
-app.use('/', express.static(path.join(__dirname, '..', '..', 'public', 'about.hironico')));
+app.use('/', express.static(path.join(__dirname, '..', 'public', 'about.hironico')));
 
 //initialize a simple http server
 const server = https.createServer({
@@ -61,7 +61,7 @@ wss.on('connection', (ws: WebSocket) => {
 });
 
 //start our server
-const port = process.env.PORT || 8999;
+const port = process.env.SERVER_PORT || 4000;
 server.listen(port, () => {
     console.log(`Server started on port ${port} :)`);
 });

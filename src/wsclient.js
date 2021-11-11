@@ -1,7 +1,7 @@
 const ws = require('ws');
 
-const client = new ws('wss://localhost:8999/',  {
-  origin: 'https://localhost:8999',
+const client = new ws('wss://localhost:4000/',  {
+  origin: 'https://localhost:4000',
   rejectUnauthorized: false
 });
 
