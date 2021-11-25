@@ -2,7 +2,7 @@
   "name": "static.sites",
   "version": "2.0.0",
   "description": "hironico.net static sites served by NodeJS Express",
-  "main": "app.js",
+  "main": "./dist/server.js",
   "scripts": {
     "build": "./node_modules/typescript/bin/tsc",
     "start": "node ./dist/server.js",
