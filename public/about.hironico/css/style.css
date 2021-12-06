@@ -374,7 +374,7 @@ p {
 
 /********About Sec CSS********/
 .content-block {
-  background: #303133;
+  background: #303133b9;
   border-top-left-radius: 10px;
   -moz-transition: all 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0s;
   -o-transition: all 0.9s cubic-bezier(0.19, 1, 0.22, 1) 0s;
@@ -627,7 +627,8 @@ a.goto-social, a.goto-social:hover {
 
 .separater-hr {
   margin: 0;
-  border-color: #454648; }
+  border-color: #454648; 
+  display: none; }
 
 /********Services Sec CSS********/
 .services-icon-wrap span {
@@ -640,7 +641,7 @@ a.goto-social, a.goto-social:hover {
     text-transform: uppercase;
     margin-top: 36px; }
 .services-icon-wrap .icon {
-  color: #6f6f71;
+  color: rgb(204,204,204);
   font-size: 60px;
   display: inline-block;
   perspective: 1000px;
