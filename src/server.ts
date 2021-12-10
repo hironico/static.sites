@@ -1,18 +1,59 @@
 import path from 'path';
-import express from 'express';
+import express, { Router } from 'express';
 import https from 'https';
 import WebSocket from 'ws';
 import fs from 'fs';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 
 import dotenv from "dotenv";
+
+const packInfo = require('../package.json');
+
+import * as stats from "./middlewares/stats";
+
+// some intriduction messages
+console.log(`This is hironico.net static sites server version ${packInfo.version}`);
+console.log(`Starting into: ${__dirname}`);
 
 // loading environment configuration fom the .env file
 dotenv.config();
 
+console.log('Configuration loaded OK.');
+console.log(`SSL key file: ${process.env.SERVER_SSL_KEY_FILE}`);
+console.log(`SSL cert file: ${process.env.SERVER_SSL_CERT_FILE}`);
+
 const app = express();
 
-console.log(`Starting into: ${__dirname}`);
-app.use('/', express.static(path.join(__dirname, '..', 'public', 'about.hironico')));
+// enable cors request for all routes
+app.use(cors());
+
+// body parser uses json
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({ type: 'application/json' }));
+
+// know more about the visitors 
+app.use(stats.queryGeoIPMiddleware);
+
+// if enabled in the .env conf file, we save the geo ip info into database.
+if (process.env.DB_STATS_ENABLE === 'true') {
+    console.info(`Stats database configuration : ${process.env.DB_USER} @ ${process.env.DB_HOSTNAME} / ${process.env.DB_DATABASE}`)
+
+    // enable save of geoip into the database for all routes.
+    app.use(stats.persistGeoIPMiddleware);
+}
+
+// create a router for handling the REST API
+const router: Router = express.Router();
+
+// install static middleware to serve various static sites
+router.use('/', express.static(path.join(__dirname, '..', 'public', 'about.hironico')));
+
+// install middleware to make stats about visitors
+stats.handleRouteGeoIP(router);
+
+// now add router to the app
+app.use('/', router);
 
 //initialize a simple http server
 const server = https.createServer({
@@ -33,7 +74,7 @@ wss.on('connection', (ws: WebSocket) => {
     ws.on('message', (message: any) => {
         try {
             if (nextFile !== null) {
-                const receivedData = new Float32Array(message);                
+                const receivedData = new Float32Array(message);
                 const filePath = `/tmp/${nextFile.name}`;
                 console.log(`Writing ${receivedData.byteLength} bytes into ${filePath}`);
                 const buffer = Buffer.from(receivedData.buffer);
@@ -48,13 +89,13 @@ wss.on('connection', (ws: WebSocket) => {
                         name: myMessage.name,
                         size: myMessage.size
                     }
-    
+
                     ws.send('READY');
                 }
-            }            
+            }
         } catch (error) {
             nextFile = null;
-            console.log('Message not recognized.');            
+            console.log('Message not recognized.');
             ws.send(`ERROR: Message not recognized: ${JSON.stringify(error)}`);
         }
     });

@@ -26,3 +26,15 @@
 SERVER_PORT=4000
 SERVER_SSL_KEY_FILE=server.key
 SERVER_SSL_CERT_FILE=server.cert
+
+#
+# Database connection for statistics
+# Set the enableswitch to true and fill proper credentials to
+# record web access stats with geoip information into a database
+#
+DB_STATS_ENABLE=false
+DB_HOSTNAME=mysuperhost.isp.net
+DB_PORT=123456
+DB_USER=stats_user
+DB_PASSWORD=3up3rSecr3t
+DB_DATABASE=stats_db
