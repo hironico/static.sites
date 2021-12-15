@@ -81,11 +81,15 @@ if (process.env.DB_STATS_ENABLE === 'true') {
             type: dist_1.DataTypes.STRING,
             allowNull: true
         },
-        timestamp: {
-            type: dist_1.DataTypes.DATE,
+        user_agent: {
+            type: dist_1.DataTypes.STRING,
             allowNull: true
         },
-        user_agent: {
+        visit_datetime: {
+            type: dist_1.DataTypes.DATE,
+            allowNull: false
+        },
+        visit_url: {
             type: dist_1.DataTypes.STRING,
             allowNull: true
         }

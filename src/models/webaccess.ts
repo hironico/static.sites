@@ -60,11 +60,15 @@ if (process.env.DB_STATS_ENABLE === 'true') {
             type: DataTypes.STRING,
             allowNull: true
         },
-        timestamp: {
-            type: DataTypes.DATE,
+        user_agent: {
+            type: DataTypes.STRING,
             allowNull: true
         },
-        user_agent: {
+        visit_datetime: {
+            type: DataTypes.DATE,
+            allowNull: false
+        },
+        visit_url: {
             type: DataTypes.STRING,
             allowNull: true
         }

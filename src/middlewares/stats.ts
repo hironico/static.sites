@@ -135,6 +135,7 @@ export const persistGeoIPMiddleware = (req: RequestWithGeoIP, res:Response, next
         return;
     }
 
+    const requestedUrl = req.protocol + '://' + req.get('host') + req.url;
     const geoip = req.geoip;
     sequelize.transaction().then((t:Transaction) => {
         WebAccess.create({
@@ -149,7 +150,8 @@ export const persistGeoIPMiddleware = (req: RequestWithGeoIP, res:Response, next
             time_zone: geoip.time_zone,
             postal_code: geoip.postal_code,
             isp: geoip.org,
-            user_agent: req.get('user-agent')
+            user_agent: req.get('user-agent'),
+            visit_url: requestedUrl
         }).then((value: WebAccess) => {
             t.commit();
         }).catch(reason => {
