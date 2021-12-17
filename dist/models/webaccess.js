@@ -27,6 +27,10 @@ class WebAccess extends sequelize_1.Model {
 }
 exports.WebAccess = WebAccess;
 ;
+// Override timezone formatting for MSSQL
+sequelize_1.DataTypes.DATE.prototype._stringify = function _stringify(date, options) {
+    return this._applyTimezone(date, options).format('YYYY-MM-DD HH:mm:ss.SSS');
+};
 // init the model only if it is enabled in the config
 dotenv.config();
 if (process.env.DB_STATS_ENABLE === 'true') {
@@ -87,7 +91,8 @@ if (process.env.DB_STATS_ENABLE === 'true') {
         },
         visit_datetime: {
             type: sequelize_1.DataTypes.DATE,
-            allowNull: false
+            allowNull: false,
+            defaultValue: sequelize_1.DataTypes.NOW
         },
         visit_url: {
             type: sequelize_1.DataTypes.STRING,
