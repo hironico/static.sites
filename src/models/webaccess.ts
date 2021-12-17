@@ -1,9 +1,14 @@
-import { DataTypes, Model } from "sequelize/dist";
+import { DataTypes, Model } from "sequelize";
 import * as dotenv from "dotenv";
 
 import { getSequelize } from "../utils/mssql";
 
 export class WebAccess extends Model {
+};
+
+// Override timezone formatting for MSSQL
+DataTypes.DATE.prototype._stringify = function _stringify(date: Date, options: any) {
+    return this._applyTimezone(date, options).format('YYYY-MM-DD HH:mm:ss.SSS');
 };
 
 // init the model only if it is enabled in the config
@@ -66,7 +71,8 @@ if (process.env.DB_STATS_ENABLE === 'true') {
         },
         visit_datetime: {
             type: DataTypes.DATE,
-            allowNull: false
+            allowNull: false,
+            defaultValue: DataTypes.NOW
         },
         visit_url: {
             type: DataTypes.STRING,

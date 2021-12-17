@@ -17,7 +17,7 @@ export const getSequelize = (): Sequelize => {
 export const getSequelizeFromParams = (hostname: string, username: string, password: string, database: string): Sequelize => {    
     console.info(`Connecting ${username} @ ${hostname} / ${database}`);
 
-    const sequelize = new Sequelize(database, username, password, {
+    let sequelize = new Sequelize(database, username, password, {
         host: hostname,
         port: 1433,
         dialect: 'mssql',

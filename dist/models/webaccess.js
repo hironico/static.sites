@@ -20,10 +20,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebAccess = void 0;
-const dist_1 = require("sequelize/dist");
+const sequelize_1 = require("sequelize");
 const dotenv = __importStar(require("dotenv"));
 const mssql_1 = require("../utils/mssql");
-class WebAccess extends dist_1.Model {
+class WebAccess extends sequelize_1.Model {
 }
 exports.WebAccess = WebAccess;
 ;
@@ -32,65 +32,65 @@ dotenv.config();
 if (process.env.DB_STATS_ENABLE === 'true') {
     WebAccess.init({
         id: {
-            type: dist_1.DataTypes.NUMBER,
+            type: sequelize_1.DataTypes.NUMBER,
             allowNull: false,
             primaryKey: true,
             autoIncrement: true
         },
         ip4: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: false
         },
         ip6: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         country: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         country_code: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         city: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         continent: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         latitude: {
-            type: dist_1.DataTypes.NUMBER,
+            type: sequelize_1.DataTypes.NUMBER,
             allowNull: true
         },
         longitude: {
-            type: dist_1.DataTypes.NUMBER,
+            type: sequelize_1.DataTypes.NUMBER,
             allowNull: true
         },
         timezone: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         postal_code: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         isp_name: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         user_agent: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         },
         visit_datetime: {
-            type: dist_1.DataTypes.DATE,
+            type: sequelize_1.DataTypes.DATE,
             allowNull: false
         },
         visit_url: {
-            type: dist_1.DataTypes.STRING,
+            type: sequelize_1.DataTypes.STRING,
             allowNull: true
         }
     }, {
