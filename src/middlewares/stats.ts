@@ -80,7 +80,7 @@ export const queryGeoIPMiddleware = (req: RequestWithGeoIP, res: Response, next:
         if (typeof forwardIp === 'string') {
             forwardIpStr = '' + forwardIp;
         } else {
-            forwardIpStr = forwardIp[0];
+            forwardIpStr = forwardIp !== null ? forwardIp[0] : null;
         }
 
         const ip:string = forwardIp === null ? req.socket.remoteAddress : forwardIpStr;
@@ -106,7 +106,7 @@ export const queryGeoIPMiddleware = (req: RequestWithGeoIP, res: Response, next:
         });
     } catch (reason) {
         // global catch to ensure we do not interrupt middleware chain
-        console.log('PROBLEM: ' + JSON.stringify(reason));
+        console.log(`PROBLEM: ${reason}`);
         req.geoip = null;
         next();
     }
@@ -151,11 +151,12 @@ export const persistGeoIPMiddleware = (req: RequestWithGeoIP, res:Response, next
             postal_code: geoip.postal_code,
             isp: geoip.org,
             user_agent: req.get('user-agent'),
+            visit_datetime: new Date(),
             visit_url: requestedUrl
         }).then((value: WebAccess) => {
             t.commit();
         }).catch(reason => {
-            console.log(reason);
+            console.log(`Cannot create WebAccess row in database: "${reason}"`);
             t.rollback();
         });
     });
