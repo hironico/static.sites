@@ -9,7 +9,7 @@ function sendFileData(ws, fileToSend) {
 
    reader.onload = function(e) {
        rawData = e.target.result;
-       ws.binaryType = 'arrayBuffer';
+       ws.binaryType = 'arraybuffer';
        ws.send(rawData, { binary: true } );
        console.log('Finished processing.');
    }
