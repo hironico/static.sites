@@ -95,7 +95,7 @@ wss.on('connection', (ws: WebSocket) => {
             }
         } catch (error) {
             nextFile = null;
-            console.log('Message not recognized.');
+            console.log(`Message not recognized: ${error}.`);
             ws.send(`ERROR: Message not recognized: ${JSON.stringify(error)}`);
         }
     });
