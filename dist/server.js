@@ -75,9 +75,10 @@ wss.on('connection', (ws) => {
     //connection is up, let's add a simple event listener to save files on a directory
     ws.binaryType = 'arraybuffer';
     ws.on('message', (message) => {
+        console.log(`Received message of type: ${typeof message}`);
         try {
             if (nextFile !== null) {
-                const receivedData = new Float32Array(message);
+                const receivedData = new Uint8Array(message);
                 const filePath = `/tmp/${nextFile.name}`;
                 console.log(`Writing ${receivedData.byteLength} bytes into ${filePath}`);
                 const buffer = Buffer.from(receivedData.buffer);
@@ -99,7 +100,7 @@ wss.on('connection', (ws) => {
         }
         catch (error) {
             nextFile = null;
-            console.log('Message not recognized.');
+            console.log(`Message not recognized: ${error}.`);
             ws.send(`ERROR: Message not recognized: ${JSON.stringify(error)}`);
         }
     });

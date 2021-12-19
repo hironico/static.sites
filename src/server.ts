@@ -72,9 +72,10 @@ wss.on('connection', (ws: WebSocket) => {
     ws.binaryType = 'arraybuffer';
 
     ws.on('message', (message: any) => {
+        console.log(`Received message of type: ${typeof message}`);
         try {
             if (nextFile !== null) {
-                const receivedData = new Float32Array(message);
+                const receivedData = new Uint8Array(message);
                 const filePath = `/tmp/${nextFile.name}`;
                 console.log(`Writing ${receivedData.byteLength} bytes into ${filePath}`);
                 const buffer = Buffer.from(receivedData.buffer);

@@ -51,9 +51,9 @@ function initWS() {
           }
        };
         
-       ws.onclose = function() {           
+       ws.onclose = function(evt) {           
           // websocket is closed.
-         console.log('Websocket connection has been closed.');
+         console.log(`Websocket connection has been closed. Code: ${evt.code}. Reason: ${evt.reason}. Clean: ${evt.wasClean}`);
        };
 
        return ws;
