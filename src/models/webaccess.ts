@@ -1,7 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import * as dotenv from "dotenv";
 
-import { getSequelize } from "../utils/mssql";
+import { getSequelize } from "../utils/sequelize";
 
 export class WebAccess extends Model {
 };
@@ -81,7 +81,7 @@ if (process.env.DB_STATS_ENABLE === 'true') {
     }, {
         sequelize: getSequelize(),
         freezeTableName: true,
-        tableName: 'WEB_ACCESS',
+        tableName: 'web_access',
         timestamps: false
     });
 }

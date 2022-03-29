@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import performRequest from "../utils/request";
-import { getSequelize } from "../utils/mssql";
+import { getSequelize } from "../utils/sequelize";
 import { Sequelize, Transaction } from "sequelize/dist";
 import { WebAccess } from "../models/webaccess";
 
@@ -38,11 +38,11 @@ const ipStackRequest = (ip: string, accessKey: string): Promise<GeoIP> => {
     return new Promise<GeoIP> ((resolve, reject) => {
         performRequest('api.ipstack.com', `/${ip}`, 'GET', queryData)
         .then((result: string) => {
-            console.log('Got ip stack GeoIP : ' + result);
+            // console.log(`Got ip stack GeoIP: ${result}`);
             const geoIp:GeoIP = JSON.parse(result);
             resolve(geoIp);
         }).catch((reason) => {
-            console.log('Cannot perform IP stack request: ' +reason);
+            console.log(`Cannot perform IP stack request: ${reason}`);
             reject(reason);
         });
     });
@@ -57,10 +57,11 @@ const ipLocateRequest = (ip: string): Promise<GeoIP> => {
     return new Promise<GeoIP> ((resolve, reject) => {
         performRequest('www.iplocate.io', `/api/lookup/${ip}`, 'GET', null)
         .then((result: string) => {
+            // console.log(`Got ip stack response: ${result}`);
             const geoIp:GeoIP = JSON.parse(result);
             resolve(geoIp);
         }).catch((reason) => {
-            console.log('Could not perform ip locate request: ' + reason);
+            console.log(`Could not perform ip locate request: ${reason}`);
             reject(reason);
         });
     });
@@ -83,7 +84,10 @@ export const queryGeoIPMiddleware = (req: RequestWithGeoIP, res: Response, next:
             forwardIpStr = forwardIp !== null ? forwardIp[0] : null;
         }
 
-        const ip:string = forwardIp === null ? req.socket.remoteAddress : forwardIpStr;
+        let ip:string = forwardIp === null ? req.socket.remoteAddress : forwardIpStr;
+        if ('0000:0000:0000:0000:0000:0000:0000:0001' === ip || '::1' === ip || null === ip) {
+            ip = '127.0.0.1';
+        }
 
         //const serviceLimits = await db.getGeoLimitExpiry();
         const serviceLimits = {
