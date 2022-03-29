@@ -2,7 +2,15 @@ import { Sequelize } from "sequelize";
 
 import dotenv from "dotenv";
 
+// current sequelize
+let _sequelize: Sequelize = null;
+
 export const getSequelize = (): Sequelize => {
+
+    if (_sequelize !== null) {
+        return _sequelize;
+    }
+
     // ensure configuration is loaded whenever we rscall this script
     dotenv.config();
 
@@ -13,10 +21,11 @@ export const getSequelize = (): Sequelize => {
     const portnum = process.env.DB_PORT;
     const dbType = process.env.DB_TYPE;
     
-    return getSequelizeFromParams(hostname, username, password, database, portnum, dbType);
+    _sequelize = getSequelizeFromParams(hostname, username, password, database, portnum, dbType);
+    return _sequelize;
 }
 
-export const getSequelizeFromParams = (hostname: string, username: string, password: string, database: string, portnum: string, dbType: string): Sequelize => {    
+const getSequelizeFromParams = (hostname: string, username: string, password: string, database: string, portnum: string, dbType: string): Sequelize => {    
     console.info(`Connecting ${username} @ ${hostname} / ${database}`);
 
     const port = Number.parseInt(portnum);

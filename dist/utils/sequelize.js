@@ -3,10 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSequelizeFromParams = exports.getSequelize = void 0;
+exports.getSequelize = void 0;
 const sequelize_1 = require("sequelize");
 const dotenv_1 = __importDefault(require("dotenv"));
+// current sequelize
+let _sequelize = null;
 const getSequelize = () => {
+    if (_sequelize !== null) {
+        return _sequelize;
+    }
     // ensure configuration is loaded whenever we rscall this script
     dotenv_1.default.config();
     const hostname = process.env.DB_HOSTNAME;
@@ -15,7 +20,8 @@ const getSequelize = () => {
     const database = process.env.DB_DATABASE;
     const portnum = process.env.DB_PORT;
     const dbType = process.env.DB_TYPE;
-    return (0, exports.getSequelizeFromParams)(hostname, username, password, database, portnum, dbType);
+    _sequelize = getSequelizeFromParams(hostname, username, password, database, portnum, dbType);
+    return _sequelize;
 };
 exports.getSequelize = getSequelize;
 const getSequelizeFromParams = (hostname, username, password, database, portnum, dbType) => {
@@ -37,5 +43,4 @@ const getSequelizeFromParams = (hostname, username, password, database, portnum,
     });
     return sequelize;
 };
-exports.getSequelizeFromParams = getSequelizeFromParams;
 //# sourceMappingURL=sequelize.js.map
