@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleRouteGeoIP = exports.persistGeoIPMiddleware = exports.queryGeoIPMiddleware = void 0;
 const request_1 = __importDefault(require("../utils/request"));
-const mssql_1 = require("../utils/mssql");
+const sequelize_1 = require("../utils/sequelize");
 const webaccess_1 = require("../models/webaccess");
 /*
  * IP Stack Request
@@ -18,11 +18,11 @@ const ipStackRequest = (ip, accessKey) => {
     return new Promise((resolve, reject) => {
         (0, request_1.default)('api.ipstack.com', `/${ip}`, 'GET', queryData)
             .then((result) => {
-            console.log('Got ip stack GeoIP : ' + result);
+            // console.log(`Got ip stack GeoIP: ${result}`);
             const geoIp = JSON.parse(result);
             resolve(geoIp);
         }).catch((reason) => {
-            console.log('Cannot perform IP stack request: ' + reason);
+            console.log(`Cannot perform IP stack request: ${reason}`);
             reject(reason);
         });
     });
@@ -35,10 +35,11 @@ const ipLocateRequest = (ip) => {
     return new Promise((resolve, reject) => {
         (0, request_1.default)('www.iplocate.io', `/api/lookup/${ip}`, 'GET', null)
             .then((result) => {
+            // console.log(`Got ip stack response: ${result}`);
             const geoIp = JSON.parse(result);
             resolve(geoIp);
         }).catch((reason) => {
-            console.log('Could not perform ip locate request: ' + reason);
+            console.log(`Could not perform ip locate request: ${reason}`);
             reject(reason);
         });
     });
@@ -59,7 +60,10 @@ const queryGeoIPMiddleware = (req, res, next) => {
         else {
             forwardIpStr = forwardIp !== null ? forwardIp[0] : null;
         }
-        const ip = forwardIp === null ? req.socket.remoteAddress : forwardIpStr;
+        let ip = forwardIp === null ? req.socket.remoteAddress : forwardIpStr;
+        if ('0000:0000:0000:0000:0000:0000:0000:0001' === ip || '::1' === ip || null === ip) {
+            ip = '127.0.0.1';
+        }
         //const serviceLimits = await db.getGeoLimitExpiry();
         const serviceLimits = {
             ipstack_limit_expiry: 1543035611,
@@ -100,7 +104,7 @@ const persistGeoIPMiddleware = (req, res, next) => {
     }
     const hostname = process.env.DB_HOSTNAME;
     const database = process.env.DB_DATABASE;
-    const sequelize = (0, mssql_1.getSequelize)();
+    const sequelize = (0, sequelize_1.getSequelize)();
     if (typeof sequelize === 'undefined' || sequelize === null) {
         console.log(`Unable to connect to ${database}@${hostname}`);
         next();

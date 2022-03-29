@@ -38,4 +38,4 @@ const getSequelizeFromParams = (hostname, username, password, database, portnum,
     return sequelize;
 };
 exports.getSequelizeFromParams = getSequelizeFromParams;
-//# sourceMappingURL=mssql.js.map
+//# sourceMappingURL=sequelize.js.map

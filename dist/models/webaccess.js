@@ -22,7 +22,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebAccess = void 0;
 const sequelize_1 = require("sequelize");
 const dotenv = __importStar(require("dotenv"));
-const mssql_1 = require("../utils/mssql");
+const sequelize_2 = require("../utils/sequelize");
 class WebAccess extends sequelize_1.Model {
 }
 exports.WebAccess = WebAccess;
@@ -99,9 +99,9 @@ if (process.env.DB_STATS_ENABLE === 'true') {
             allowNull: true
         }
     }, {
-        sequelize: (0, mssql_1.getSequelize)(),
+        sequelize: (0, sequelize_2.getSequelize)(),
         freezeTableName: true,
-        tableName: 'WEB_ACCESS',
+        tableName: 'web_access',
         timestamps: false
     });
 }
