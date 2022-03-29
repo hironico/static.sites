@@ -30,9 +30,9 @@ const getSequelizeFromParams = (hostname, username, password, database, portnum,
             force: false
         },
         pool: {
-            max: 20,
-            min: 2,
-            idle: 2
+            max: 9,
+            min: 1,
+            idle: 10000,
         }
     });
     return sequelize;
