@@ -1,4 +1,4 @@
-import { Sequelize, QueryTypes } from "sequelize";
+import { Sequelize } from "sequelize";
 
 import dotenv from "dotenv";
 

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 import performRequest from "../utils/request";
 import { getSequelize } from "../utils/sequelize";
-import { Sequelize, Transaction } from "sequelize/dist";
+import { Sequelize, Transaction } from "sequelize";
 import { WebAccess } from "../models/webaccess";
 
 export interface GeoIP {
