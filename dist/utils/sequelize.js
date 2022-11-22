@@ -28,19 +28,24 @@ const getSequelizeFromParams = (hostname, username, password, database, portnum,
     console.info(`Connecting ${username} @ ${hostname} / ${database}`);
     const port = Number.parseInt(portnum);
     const dialect = 'MSSQL' === dbType.toUpperCase() ? 'mssql' : 'postgres';
-    let sequelize = new sequelize_1.Sequelize(database, username, password, {
-        host: hostname,
-        port: port,
-        dialect: dialect,
-        sync: {
-            force: false
-        },
-        pool: {
-            max: 9,
-            min: 1,
-            idle: 10000,
-        }
-    });
-    return sequelize;
+    try {
+        let sequelize = new sequelize_1.Sequelize(database, username, password, {
+            host: hostname,
+            port: port,
+            dialect: dialect,
+            sync: {
+                force: false
+            },
+            pool: {
+                max: 9,
+                min: 1,
+                idle: 10000,
+            }
+        });
+        return sequelize;
+    }
+    catch (error) {
+        return null;
+    }
 };
 //# sourceMappingURL=sequelize.js.map

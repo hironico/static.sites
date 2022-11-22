@@ -28,7 +28,6 @@ const https_1 = __importDefault(require("https"));
 const ws_1 = __importDefault(require("ws"));
 const fs_1 = __importDefault(require("fs"));
 const cors_1 = __importDefault(require("cors"));
-const body_parser_1 = __importDefault(require("body-parser"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const packInfo = require('../package.json');
 const stats = __importStar(require("./middlewares/stats"));
@@ -44,8 +43,8 @@ const app = (0, express_1.default)();
 // enable cors request for all routes
 app.use((0, cors_1.default)());
 // body parser uses json
-app.use(body_parser_1.default.urlencoded({ extended: false }));
-app.use(body_parser_1.default.json({ type: 'application/json' }));
+app.use(express_1.default.urlencoded({ extended: false }));
+app.use(express_1.default.json({ type: 'application/json' }));
 // know more about the visitors 
 app.use(stats.queryGeoIPMiddleware);
 // if enabled in the .env conf file, we save the geo ip info into database.
