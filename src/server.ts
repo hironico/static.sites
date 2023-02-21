@@ -1,11 +1,12 @@
 import path from 'path';
 import express, { Router } from 'express';
 import https from 'https';
+import http from 'http';
 import WebSocket from 'ws';
 import fs from 'fs';
 import cors from 'cors';
-
 import dotenv from "dotenv";
+import helmet from 'helmet';
 
 const packInfo = require('../package.json');
 
@@ -23,6 +24,9 @@ console.log(`SSL key file: ${process.env.SERVER_SSL_KEY_FILE}`);
 console.log(`SSL cert file: ${process.env.SERVER_SSL_CERT_FILE}`);
 
 const app = express();
+
+// use helmet to secure http headers
+app.use(helmet());
 
 // enable cors request for all routes
 app.use(cors());
@@ -54,11 +58,17 @@ stats.handleRouteGeoIP(router);
 // now add router to the app
 app.use('/', router);
 
-//initialize a simple http server
-const server = https.createServer({
-    key: fs.readFileSync(process.env.SERVER_SSL_KEY_FILE),
-    cert: fs.readFileSync(process.env.SERVER_SSL_CERT_FILE)
-}, app)
+//initialize a simple https server if enabled in the configuration
+let server = null;
+if (process.env.SERVER_SSL_ENABLE === 'true') {
+    server = https.createServer({
+        key: fs.readFileSync(process.env.SERVER_SSL_KEY_FILE),
+        cert: fs.readFileSync(process.env.SERVER_SSL_CERT_FILE)
+    }, app)
+} else {
+    console.warn('Creating non secure HTTP server; USe only for development. See dotenv-sample file for info.');
+    server = http.createServer(app);
+}
 
 //initialize the WebSocket server instance
 const wss = new WebSocket.Server({ server });
