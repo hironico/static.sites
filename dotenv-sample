@@ -38,3 +38,4 @@ DB_PORT=123456
 DB_USER=stats_user
 DB_PASSWORD=3up3rSecr3t
 DB_DATABASE=stats_db
+DB_TYPE=postgres

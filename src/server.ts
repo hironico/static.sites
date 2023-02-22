@@ -4,7 +4,6 @@ import https from 'https';
 import WebSocket from 'ws';
 import fs from 'fs';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 
 import dotenv from "dotenv";
 
@@ -29,8 +28,8 @@ const app = express();
 app.use(cors());
 
 // body parser uses json
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json({ type: 'application/json' }));
+app.use(express.urlencoded({extended: false}));
+app.use(express.json({ type: 'application/json' }));
 
 // know more about the visitors 
 app.use(stats.queryGeoIPMiddleware);
