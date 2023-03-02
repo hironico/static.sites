@@ -1,11 +1,7 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -32,6 +28,7 @@ const https_1 = __importDefault(require("https"));
 const ws_1 = __importDefault(require("ws"));
 const fs_1 = __importDefault(require("fs"));
 const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const packInfo = require('../package.json');
 const stats = __importStar(require("./middlewares/stats"));
@@ -44,6 +41,8 @@ console.log('Configuration loaded OK.');
 console.log(`SSL key file: ${process.env.SERVER_SSL_KEY_FILE}`);
 console.log(`SSL cert file: ${process.env.SERVER_SSL_CERT_FILE}`);
 const app = (0, express_1.default)();
+// protect against well know attacks
+app.use((0, helmet_1.default)());
 // enable cors request for all routes
 app.use((0, cors_1.default)());
 // body parser uses json
