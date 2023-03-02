@@ -43,7 +43,7 @@ if (process.env.DB_STATS_ENABLE === 'true') {
         },
         ip4: {
             type: sequelize_1.DataTypes.STRING,
-            allowNull: false
+            allowNull: true
         },
         ip6: {
             type: sequelize_1.DataTypes.STRING,
@@ -96,7 +96,7 @@ if (process.env.DB_STATS_ENABLE === 'true') {
         },
         visit_url: {
             type: sequelize_1.DataTypes.STRING,
-            allowNull: true
+            allowNull: false
         }
     }, {
         sequelize: (0, sequelize_2.getSequelize)(),
