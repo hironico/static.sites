@@ -1,6 +1,6 @@
 {
   "name": "static.sites",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "hironico.net static sites served by NodeJS Express",
   "main": "./dist/server.js",
   "scripts": {
