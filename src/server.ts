@@ -5,6 +5,7 @@ import http from 'http';
 import WebSocket from 'ws';
 import fs from 'fs';
 import cors from 'cors';
+
 import dotenv from "dotenv";
 import helmet from 'helmet';
 
@@ -25,7 +26,7 @@ console.log(`SSL cert file: ${process.env.SERVER_SSL_CERT_FILE}`);
 
 const app = express();
 
-// use helmet to secure http headers
+// protect against well know attacks
 app.use(helmet());
 
 // enable cors request for all routes

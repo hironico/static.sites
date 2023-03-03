@@ -48,6 +48,7 @@ const getSequelizeFromParams = (hostname: string, username: string, password: st
 
         return sequelize;
     } catch (error) {
+        console.error(`Cannot connect to database: ${error}`);
         return null;
     }
 }
