@@ -39,3 +39,14 @@ DB_USER=stats_user
 DB_PASSWORD=3up3rSecr3t
 DB_DATABASE=stats_db
 DB_TYPE=postgres
+
+# 
+# IP locate API key to use 
+# See iplocate.io/signup to get one
+# (1000 requests per day free)
+#
+IPLOCATE_API_KEY=123456abcdef098765ghijk
+IPLOCATE_LOCALHOST_OPTIMZE=1
+
+# nodejs environment optimization for production
+NODE_ENV=production
