@@ -18,11 +18,37 @@ export interface GeoIP {
     org: string,
     asn: string,
     subdivision: string,
-    subdivision2: string
+    subdivision2: string,
+    error?: string
 }
 
 export interface RequestWithGeoIP extends Request {
     geoip?: GeoIP
+}
+
+/**
+ * 
+ * @param ip4 Create a new GeoIP object with ip4 only given in parameter
+ * @returns new GeoIP object with ip4 in the ip property
+ */
+const newGeoIP = ( ip4: string ): GeoIP => {
+    let geoIp: GeoIP = {
+        ip: ip4,
+        ipv6: null,
+        country: null, 
+        country_code: null,
+        city: null,
+        continent: null,
+        latitude: null,
+        longitude: null,
+        time_zone: null,
+        postal_code: null,
+        org: null,
+        asn: null,
+        subdivision: null,
+        subdivision2: null
+    }
+    return geoIp;
 }
 
 /* 
@@ -48,17 +74,41 @@ const ipStackRequest = (ip: string, accessKey: string): Promise<GeoIP> => {
     });
 }
 
-/*
- * IP Locate Request 
-*/
+/**
+ * IP Locate request
+ * You should signup for an API key.
+ * See dotenv-sample file to get more informations
+ */
 const ipLocateRequest = (ip: string): Promise<GeoIP> => {
     // const url = 'https://www.iplocate.io/api/lookup/' + ip;
 
     return new Promise<GeoIP> ((resolve, reject) => {
-        performRequest('www.iplocate.io', `/api/lookup/${ip}`, 'GET', null)
+        if ('127.0.0.1' === ip && process.env.IPLOCATE_LOCALHOST_OPTIMZE !== '0') {
+            console.log('Skipping geo ip locate request for localhost. Disable with IPLOCATE_LOCALHOST_OPTIMIZE=0 in .env file.');
+            resolve(newGeoIP(ip));
+            return;
+        }
+
+        const apiKey = process.env.IPLOCATE_API_KEY;
+        if (typeof apiKey === 'undefined' || apiKey === null) {
+            reject('Please configure qan API key in the .env config file. See dotenv-sample for more info.');
+            return;
+        }
+
+        performRequest('www.iplocate.io', `/api/lookup/${ip}?apikey=${apiKey}`, 'GET', null)
         .then((result: string) => {
             // console.log(`Got ip stack response: ${result}`);
-            const geoIp:GeoIP = JSON.parse(result);
+            const geoIp:GeoIP = <GeoIP>JSON.parse(result);
+
+            if (geoIp.error) {
+                console.log(`ERROR while getting the iplocate GeoIP: ${geoIp.error}. Using ip=${ip} for logging.`);
+                if (ip.indexOf(':') >= 0) {
+                    geoIp.ipv6 = ip;
+                } else {
+                    geoIp.ip = ip;
+                }
+            }
+
             resolve(geoIp);
         }).catch((reason) => {
             console.log(`Could not perform ip locate request: ${reason}`);
@@ -85,7 +135,7 @@ export const queryGeoIPMiddleware = (req: RequestWithGeoIP, res: Response, next:
         }
 
         let ip:string = forwardIp === null ? req.socket.remoteAddress : forwardIpStr;
-        if ('0000:0000:0000:0000:0000:0000:0000:0001' === ip || '::1' === ip || null === ip) {
+        if ('0000:0000:0000:0000:0000:0000:0000:0001' === ip || '::1' === ip || null === ip || ip.endsWith('127.0.0.1')) {
             ip = '127.0.0.1';
         }
 
@@ -104,8 +154,8 @@ export const queryGeoIPMiddleware = (req: RequestWithGeoIP, res: Response, next:
             next();
         }).catch((error) => {
             // do not interrupt the processing chain of middlewares in casewedo not get geoip
-            console.log(`ERROR: Could not assign the GeoIP object to request. ${error}`);
-            req.geoip = null;
+            console.log(`ERROR: Could not request the GeoIP. ${error}`);
+            req.geoip = newGeoIP(ip); 
             next();
         });
     } catch (reason) {
@@ -157,12 +207,14 @@ export const persistGeoIPMiddleware = (req: RequestWithGeoIP, res:Response, next
             user_agent: req.get('user-agent'),
             visit_datetime: new Date(),
             visit_url: requestedUrl
-        }).then((value: WebAccess) => {
+        }, { transaction: t }).then((value: WebAccess) => {
             t.commit();
         }).catch(reason => {
             console.log(`Cannot create WebAccess row in database: "${reason}"`);
             t.rollback();
         });
+    }).catch(reason => {
+        console.log(`Cannot create WebAccess row in database; Transaction error: "${reason}"`);
     });
 
     // invoke immediately the next middlewarewithout waiting for the
