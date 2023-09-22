@@ -3,10 +3,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleRouteGeoIP = exports.persistGeoIPMiddleware = exports.queryGeoIPMiddleware = void 0;
+exports.webAccessAPIRouter = exports.persistGeoIPMiddleware = exports.queryGeoIPMiddleware = void 0;
 const request_1 = __importDefault(require("../utils/request"));
 const sequelize_1 = require("../utils/sequelize");
 const webaccess_1 = require("../models/webaccess");
+const webaccess_by_country_1 = require("../models/webaccess_by_country");
+const webaccess_by_platform_1 = require("../models/webaccess_by_platform");
+/**
+ *
+ * @param ip4 Create a new GeoIP object with ip4 only given in parameter
+ * @returns new GeoIP object with ip4 in the ip property
+ */
+const newGeoIP = (ip4) => {
+    let geoIp = {
+        ip: ip4,
+        ipv6: null,
+        country: null,
+        country_code: null,
+        city: null,
+        continent: null,
+        latitude: null,
+        longitude: null,
+        time_zone: null,
+        postal_code: null,
+        org: null,
+        asn: null,
+        subdivision: null,
+        subdivision2: null
+    };
+    return geoIp;
+};
 /*
  * IP Stack Request
 */
@@ -27,16 +53,37 @@ const ipStackRequest = (ip, accessKey) => {
         });
     });
 };
-/*
- * IP Locate Request
-*/
+/**
+ * IP Locate request
+ * You should signup for an API key.
+ * See dotenv-sample file to get more informations
+ */
 const ipLocateRequest = (ip) => {
     // const url = 'https://www.iplocate.io/api/lookup/' + ip;
     return new Promise((resolve, reject) => {
-        (0, request_1.default)('www.iplocate.io', `/api/lookup/${ip}`, 'GET', null)
+        if ('127.0.0.1' === ip && process.env.IPLOCATE_LOCALHOST_OPTIMZE !== '0') {
+            console.log('Skipping geo ip locate request for localhost. Disable with IPLOCATE_LOCALHOST_OPTIMIZE=0 in .env file.');
+            resolve(newGeoIP(ip));
+            return;
+        }
+        const apiKey = process.env.IPLOCATE_API_KEY;
+        if (typeof apiKey === 'undefined' || apiKey === null) {
+            reject('Please configure qan API key in the .env config file. See dotenv-sample for more info.');
+            return;
+        }
+        (0, request_1.default)('www.iplocate.io', `/api/lookup/${ip}?apikey=${apiKey}`, 'GET', null)
             .then((result) => {
             // console.log(`Got ip stack response: ${result}`);
             const geoIp = JSON.parse(result);
+            if (geoIp.error) {
+                console.log(`ERROR while getting the iplocate GeoIP: ${geoIp.error}. Using ip=${ip} for logging.`);
+                if (ip.indexOf(':') >= 0) {
+                    geoIp.ipv6 = ip;
+                }
+                else {
+                    geoIp.ip = ip;
+                }
+            }
             resolve(geoIp);
         }).catch((reason) => {
             console.log(`Could not perform ip locate request: ${reason}`);
@@ -61,7 +108,7 @@ const queryGeoIPMiddleware = (req, res, next) => {
             forwardIpStr = forwardIp !== null ? forwardIp[0] : null;
         }
         let ip = forwardIp === null ? req.socket.remoteAddress : forwardIpStr;
-        if ('0000:0000:0000:0000:0000:0000:0000:0001' === ip || '::1' === ip || null === ip) {
+        if ('0000:0000:0000:0000:0000:0000:0000:0001' === ip || '::1' === ip || null === ip || ip.endsWith('127.0.0.1')) {
             ip = '127.0.0.1';
         }
         //const serviceLimits = await db.getGeoLimitExpiry();
@@ -77,8 +124,8 @@ const queryGeoIPMiddleware = (req, res, next) => {
             next();
         }).catch((error) => {
             // do not interrupt the processing chain of middlewares in casewedo not get geoip
-            console.log(`ERROR: Could not assign the GeoIP object to request. ${error}`);
-            req.geoip = null;
+            console.log(`ERROR: Could not request the GeoIP. ${error}`);
+            req.geoip = newGeoIP(ip);
             next();
         });
     }
@@ -102,10 +149,10 @@ const persistGeoIPMiddleware = (req, res, next) => {
         next();
         return;
     }
-    const hostname = process.env.DB_HOSTNAME;
-    const database = process.env.DB_DATABASE;
     const sequelize = (0, sequelize_1.getSequelize)();
     if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
         console.log(`Unable to connect to ${database}@${hostname}`);
         next();
         return;
@@ -128,19 +175,82 @@ const persistGeoIPMiddleware = (req, res, next) => {
             user_agent: req.get('user-agent'),
             visit_datetime: new Date(),
             visit_url: requestedUrl
-        }).then((value) => {
+        }, { transaction: t }).then((value) => {
             t.commit();
         }).catch(reason => {
             console.log(`Cannot create WebAccess row in database: "${reason}"`);
             t.rollback();
         });
+    }).catch(reason => {
+        console.log(`Cannot create WebAccess row in database; Transaction error: "${reason}"`);
     });
     // invoke immediately the next middlewarewithout waiting for the
     // insert in database to be completed.
     next();
 };
 exports.persistGeoIPMiddleware = persistGeoIPMiddleware;
-const handleRouteGeoIP = (router) => {
+const getLastRequests = (req, res, next) => {
+    // path param nbReq is recognized only if a number. So it is safe to parse here.
+    let nbReq = Number.parseInt(req.params.nbReq);
+    nbReq = nbReq > 1000 ? 1000 : nbReq;
+    nbReq = nbReq < 0 ? 0 : nbReq;
+    const sequelize = (0, sequelize_1.getSequelize)();
+    if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
+        const msg = `Unable to connect to ${database}@${hostname}`;
+        console.log(msg);
+        res.status(500).send(msg).end();
+        return;
+    }
+    webaccess_1.WebAccess.findAll({
+        limit: nbReq,
+        order: [['id', 'DESC']]
+    })
+        .then(data => res.status(200).json(data).end())
+        .catch(error => {
+        console.log('Error while returning last web access records: ' + error);
+        res.status(500).json(error).end();
+    });
+};
+const getWebAccessByCountry = (req, res, next) => {
+    const sequelize = (0, sequelize_1.getSequelize)();
+    if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
+        const msg = `Unable to connect to ${database}@${hostname}`;
+        console.log(msg);
+        res.status(500).send(msg).end();
+        return;
+    }
+    webaccess_by_country_1.WebAccessByCountry.findAll({
+        limit: 15,
+        order: [['count', 'DESC']],
+    })
+        .then(data => res.status(200).json(data).end())
+        .catch(error => {
+        console.log('Error while returning web access by country: ' + error);
+        res.status(500).send(error).end();
+    });
+};
+const getWebAccessByPlatform = (req, res, next) => {
+    const sequelize = (0, sequelize_1.getSequelize)();
+    if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
+        const msg = `Unable to connect to ${database}@${hostname}`;
+        console.log(msg);
+        res.status(500).send(msg).end();
+        return;
+    }
+    webaccess_by_platform_1.WebAccessByPlatform.findOne()
+        .then(data => res.status(200).json(data).end())
+        .catch(error => {
+        console.log('Error while returning web access by platform: ' + error);
+        res.status(500).send(error).end();
+    });
+};
+const webAccessAPIRouter = (router) => {
     router.get('/api/ping', (req, res) => {
         res.status(200).send('pong').end();
     });
@@ -149,6 +259,9 @@ const handleRouteGeoIP = (router) => {
         const result = req.geoip === null ? 'not found' : req.geoip;
         res.status(200).json(result);
     });
+    router.get('/api/webaccess/last/:nbReq(\\d+)', getLastRequests);
+    router.get('/api/webaccess/by/country', getWebAccessByCountry);
+    router.get('/api/webaccess/by/platform', getWebAccessByPlatform);
 };
-exports.handleRouteGeoIP = handleRouteGeoIP;
+exports.webAccessAPIRouter = webAccessAPIRouter;
 //# sourceMappingURL=stats.js.map

@@ -3,6 +3,8 @@ import performRequest from "../utils/request";
 import { getSequelize } from "../utils/sequelize";
 import { Sequelize, Transaction } from "sequelize";
 import { WebAccess } from "../models/webaccess";
+import { WebAccessByCountry } from "../models/webaccess_by_country";
+import { WebAccessByPlatform } from "../models/webaccess_by_platform";
 
 export interface GeoIP {
     ip: string,
@@ -178,12 +180,12 @@ export const persistGeoIPMiddleware = (req: RequestWithGeoIP, res:Response, next
         next();
         return;
     }
-
-    const hostname = process.env.DB_HOSTNAME;
-    const database = process.env.DB_DATABASE;
+    
     const sequelize:Sequelize = getSequelize();
 
     if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
         console.log(`Unable to connect to ${database}@${hostname}`);
         next();
         return;
@@ -222,7 +224,79 @@ export const persistGeoIPMiddleware = (req: RequestWithGeoIP, res:Response, next
     next();
 }
 
-export const handleRouteGeoIP = (router: Router): void => {
+const getLastRequests = (req: Request, res: Response, next: NextFunction) => {
+
+    // path param nbReq is recognized only if a number. So it is safe to parse here.
+    let nbReq = Number.parseInt(req.params.nbReq);
+    nbReq = nbReq > 1000 ? 1000 : nbReq;
+    nbReq = nbReq < 0 ? 0 : nbReq;
+
+    const sequelize:Sequelize = getSequelize();
+
+    if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
+        const msg = `Unable to connect to ${database}@${hostname}`;
+        console.log(msg);
+        res.status(500).send(msg).end();
+        return;
+    }
+
+    WebAccess.findAll( {
+        limit: nbReq,
+        order: [['id', 'DESC']]
+    })
+    .then(data => res.status(200).json(data).end())
+    .catch(error => {
+        console.log('Error while returning last web access records: ' + error);
+        res.status(500).json(error).end()
+    });
+}
+
+const getWebAccessByCountry = (req: Request, res: Response, next: NextFunction) => {
+    const sequelize:Sequelize = getSequelize();
+
+    if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
+        const msg = `Unable to connect to ${database}@${hostname}`;
+        console.log(msg);
+        res.status(500).send(msg).end();
+        return;
+    }
+
+    WebAccessByCountry.findAll( { 
+        limit: 15,
+        order: [['count', 'DESC']],
+    })
+    .then(data => res.status(200).json(data).end())
+    .catch(error => {
+        console.log('Error while returning web access by country: ' + error);
+        res.status(500).send(error).end();
+    });
+}
+
+const getWebAccessByPlatform = (req: Request, res: Response, next: NextFunction) => {
+    const sequelize:Sequelize = getSequelize();
+
+    if (typeof sequelize === 'undefined' || sequelize === null) {
+        const hostname = process.env.DB_HOSTNAME;
+        const database = process.env.DB_DATABASE;
+        const msg = `Unable to connect to ${database}@${hostname}`;
+        console.log(msg);
+        res.status(500).send(msg).end();
+        return;
+    }
+
+    WebAccessByPlatform.findOne()
+    .then(data => res.status(200).json(data).end())
+    .catch(error => {
+        console.log('Error while returning web access by platform: ' + error);
+        res.status(500).send(error).end()
+    });
+}
+
+export const webAccessAPIRouter = (router: Router): void => {
     router.get('/api/ping', (req:Request, res: Response) => {
         res.status(200).send('pong').end();
     })
@@ -233,5 +307,7 @@ export const handleRouteGeoIP = (router: Router): void => {
         res.status(200).json(result);
     });
 
-    
+    router.get('/api/webaccess/last/:nbReq(\\d+)', getLastRequests);
+    router.get('/api/webaccess/by/country', getWebAccessByCountry);
+    router.get('/api/webaccess/by/platform', getWebAccessByPlatform);
 }

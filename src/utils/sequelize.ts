@@ -36,6 +36,9 @@ const getSequelizeFromParams = (hostname: string, username: string, password: st
             host: hostname,
             port: port,
             dialect: dialect,
+            dialectOptions: {
+                application_name: 'hironico static website'
+            },
             sync: {
                 force: false
             },

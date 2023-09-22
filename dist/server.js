@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -25,11 +29,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
 const express_1 = __importDefault(require("express"));
 const https_1 = __importDefault(require("https"));
+const http_1 = __importDefault(require("http"));
 const ws_1 = __importDefault(require("ws"));
 const fs_1 = __importDefault(require("fs"));
 const cors_1 = __importDefault(require("cors"));
-const helmet_1 = __importDefault(require("helmet"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const helmet_1 = __importDefault(require("helmet"));
 const packInfo = require('../package.json');
 const stats = __importStar(require("./middlewares/stats"));
 // some intriduction messages
@@ -60,15 +65,24 @@ if (process.env.DB_STATS_ENABLE === 'true') {
 const router = express_1.default.Router();
 // install static middleware to serve various static sites
 router.use('/', express_1.default.static(path_1.default.join(__dirname, '..', 'public', 'about.hironico')));
+// install static webstats app under the /stats subpath
+router.use('/stats', express_1.default.static(path_1.default.join(__dirname, '..', 'public', 'stats.hironico', 'build')));
 // install middleware to make stats about visitors
-stats.handleRouteGeoIP(router);
+stats.webAccessAPIRouter(router);
 // now add router to the app
 app.use('/', router);
-//initialize a simple http server
-const server = https_1.default.createServer({
-    key: fs_1.default.readFileSync(process.env.SERVER_SSL_KEY_FILE),
-    cert: fs_1.default.readFileSync(process.env.SERVER_SSL_CERT_FILE)
-}, app);
+//initialize a simple https server if enabled in the configuration
+let server = null;
+if (process.env.SERVER_SSL_ENABLE === 'true') {
+    server = https_1.default.createServer({
+        key: fs_1.default.readFileSync(process.env.SERVER_SSL_KEY_FILE),
+        cert: fs_1.default.readFileSync(process.env.SERVER_SSL_CERT_FILE)
+    }, app);
+}
+else {
+    console.warn('Creating non secure HTTP server; Use only for development. See dotenv-sample file for info.');
+    server = http_1.default.createServer(app);
+}
 //initialize the WebSocket server instance
 const wss = new ws_1.default.Server({ server });
 // next file is initialized by a prior configuration message sent from the client

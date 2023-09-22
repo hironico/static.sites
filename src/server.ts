@@ -52,8 +52,11 @@ const router: Router = express.Router();
 // install static middleware to serve various static sites
 router.use('/', express.static(path.join(__dirname, '..', 'public', 'about.hironico')));
 
+// install static webstats app under the /stats subpath
+router.use('/stats', express.static(path.join(__dirname, '..', 'public', 'stats.hironico', 'build')));
+
 // install middleware to make stats about visitors
-stats.handleRouteGeoIP(router);
+stats.webAccessAPIRouter(router);
 
 // now add router to the app
 app.use('/', router);
@@ -66,7 +69,7 @@ if (process.env.SERVER_SSL_ENABLE === 'true') {
         cert: fs.readFileSync(process.env.SERVER_SSL_CERT_FILE)
     }, app)
 } else {
-    console.warn('Creating non secure HTTP server; USe only for development. See dotenv-sample file for info.');
+    console.warn('Creating non secure HTTP server; Use only for development. See dotenv-sample file for info.');
     server = http.createServer(app);
 }
 

@@ -33,13 +33,17 @@ const getSequelizeFromParams = (hostname, username, password, database, portnum,
             host: hostname,
             port: port,
             dialect: dialect,
+            dialectOptions: {
+                application_name: 'hironico static website'
+            },
             sync: {
                 force: false
             },
             pool: {
-                max: 9,
+                max: 50,
                 min: 1,
                 idle: 10000,
+                acquire: 30000
             }
         });
         return sequelize;

@@ -46,12 +46,18 @@ if (process.env.DB_STATS_ENABLE === 'true') {
             allowNull: true
         },
         latitude: {
-            type: DataTypes.NUMBER,
-            allowNull: true
+            type: DataTypes.DECIMAL(6,3),
+            allowNull: true,
+            get(this: WebAccess) {
+                return parseFloat('' + this.getDataValue('latitude'));
+            }
         },
         longitude: {
-            type: DataTypes.NUMBER,
-            allowNull: true
+            type: DataTypes.DECIMAL(6,3),
+            allowNull: true,
+            get(this: WebAccess) {
+                return parseFloat('' + this.getDataValue('longitude'));
+            }
         },
         timezone: {
             type: DataTypes.STRING,
@@ -82,6 +88,7 @@ if (process.env.DB_STATS_ENABLE === 'true') {
         sequelize: getSequelize(),
         freezeTableName: true,
         tableName: 'web_access',
+        schema: 'public',
         timestamps: false
     });
 }
