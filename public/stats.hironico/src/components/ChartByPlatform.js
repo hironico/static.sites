@@ -9,7 +9,9 @@ function ChartByPlatform () {
         fetch(`${full}/api/webaccess/by/platform`)
         .then(response => response.json())
         .then(data => {
-            const chartData = Object.keys(data).map(k => {
+            const chartData = Object.keys(data)
+            .filter(k => k !== 'total')
+            .map(k => {
                 return {
                     name: k,
                     value: data[k]
@@ -30,7 +32,6 @@ function ChartByPlatform () {
         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData} title="Platforms">
           <PolarGrid />
           <PolarAngleAxis dataKey="name" tick={{ fill: 'aliceblue' }} azimuth={45}/>
-          <PolarRadiusAxis />
           <Radar name="Platform" dataKey="value" stroke="white" fill="aliceblue" fillOpacity={0.6} />
         </RadarChart>
       </ResponsiveContainer>

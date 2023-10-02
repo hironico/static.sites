@@ -29,11 +29,12 @@ const TableLastRequests = () => {
         return tableData.map((visit, index) => {
             const country = `${visit.country} (${visit.country_code})`;
             return <tr className="row-last-requests" key={index}>
-                <td>{visit.id}</td>
                 <td>{visit.visit_datetime}</td>
                 <td>{country}</td>
                 <td>{visit.city}</td>
+                <td>{visit.ip4}</td>
                 <td>{visit.visit_url}</td>
+                <td>{visit.user_agent}</td>
             </tr>
         });
     }
@@ -45,11 +46,12 @@ const TableLastRequests = () => {
                     <table className="table-last-requests">
                         <thead>
                             <tr>
-                            <th>id</th>
                             <th>datetime</th>
                             <th>country</th>
                             <th>city</th>
+                            <th>ip</th>
                             <th>url</th>
+                            <th>user agent</th>
                             </tr>                            
                         </thead>
                         <tbody>
