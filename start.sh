@@ -1,12 +1,14 @@
 #!/bin/bash
 
+# change log directory below to a location where user can write to.
+LOGDIR="/var/log/sites/static.sites"
+
 LOGDATE=`date +%Y%m%d%H%M%S`
-LOGDIR="/var/log/sites/static_sites"
-LOGFILE="about.hironico.net.${LOGDATE}.log"
+LOGFILE="${LOGDIR}/about.hironico.net.${LOGDATE}.log"
+
+echo "LOGFILE is: ${LOGFILE}"
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 mkdir -p $LOGDIR
-forever start -o $LOGDIR/$LOGFILE -e $LOGDIR/$LOGFILE ./dist/server.js
-
-echo "Started Nico's Drive, log file is $LOGDIR/$LOGFILE"
-exit 0
-
+node ${SCRIPT_DIR}/dist/server.js 1>${LOGFILE} 2>&1
